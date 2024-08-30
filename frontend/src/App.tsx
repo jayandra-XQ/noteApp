@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import { Note } from "./models/note";
+import { Note as NoteModel } from "./models/note";
+import Note from "./components/Note";
 
 
 function App() {
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<NoteModel[]>([]);
 
   useEffect(() => {
     const loadNotes = async () => {
@@ -25,10 +26,16 @@ function App() {
 
   return (
     <>
-      <div>
-        {JSON.stringify(notes)}
-      </div>
-    </>
+    <div>
+      {notes.length > 0 ? (
+        notes.map((note) => (
+          <Note note={note} key={note._id} />
+        ))
+      ) : (
+        <p>No notes available</p>
+      )}
+    </div>
+  </>
   )
 }
 
