@@ -1,12 +1,32 @@
+import { useEffect, useState } from "react"
+import { Note } from "./models/note";
 
 
 function App() {
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  useEffect(() => {
+    const loadNotes = async () => {
+      try {
+        const res = await fetch("/api/notes/get-notes",{
+          method: "GET",
+      })
+      const data = await res.json();
+      setNotes(data);
+        
+      } catch (error) {
+        console.error(error);
+        alert(error)
+      }
+    }
+    loadNotes();
+  },[]);
   
 
   return (
     <>
       <div>
-        <h1 className="text-center mt-4">welcome to bootstrap with react</h1>
+        {JSON.stringify(notes)}
       </div>
     </>
   )
