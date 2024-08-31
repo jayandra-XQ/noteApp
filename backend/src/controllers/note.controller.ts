@@ -38,7 +38,7 @@ export const createNotes: RequestHandler = async (req,res) => {
     const newNote = await  noteModel.create({title,text});
     
 
-    res.status(200).json({success:true , newNote})
+    res.status(200).json(newNote);
 
   } catch (error) {
     const err = error as Error
