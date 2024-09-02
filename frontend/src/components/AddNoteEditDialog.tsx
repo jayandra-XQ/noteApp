@@ -2,7 +2,8 @@ import { Button, Form, Modal } from "react-bootstrap";
 import {Note} from "../models/note"
 import { useForm } from "react-hook-form";
 
-interface AddNoteDialogProps {
+interface AddEditNoteDialogProps {
+  noteToEdit?: Note,
   onDismiss: () => void,
   onNoteSaved: (note: Note) => void,
 }
@@ -12,39 +13,63 @@ interface NoteInput {
   text: string;
 }
 
-const AddNoteDialog = ({onDismiss, onNoteSaved}: AddNoteDialogProps) => {
+const AddNoteDialog = ({noteToEdit, onDismiss, onNoteSaved}: AddEditNoteDialogProps) => {
 
-  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<NoteInput>();
+  const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<NoteInput>({
+    defaultValues: {
+      title: noteToEdit?.title || "",
+      text: noteToEdit?.text || "",
+    }
+  });
 
   const onSubmit = async (input: NoteInput) => {
     try {
-      const res = await fetch('/api/notes/create-note', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      })
-      const data = await res.json();
-      onNoteSaved(data.newNote);
+      let noteResponse: Note;
+  
+      // If there is a note to edit, update it
+      if (noteToEdit) {
+        const res = await fetch(`/api/notes/update-note/${noteToEdit._id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(input),
+        });
+        const data = await res.json();
+        noteResponse = data.updatedNote; // The updated note is returned
+      } else {
+        // If there's no note to edit, create a new one
+        const res = await fetch('/api/notes/create-note', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(input),
+        });
+        const data = await res.json();
+        noteResponse = data.newNote; // The newly created note is returned
+      }
+  
+      // Call the onNoteSaved function with the updated or new note
+      onNoteSaved(noteResponse);
       
     } catch (error) {
       console.error(error);
-      alert("Error creating note");
+      alert("Error creating or updating note");
     }
-
-  }
+  };
+  
 
   return (
     <Modal show onHide={onDismiss} onSubmit={handleSubmit(onSubmit)}>
       <Modal.Header closeButton>
           <Modal.Title>
-            Add Note
+            {noteToEdit ? "Edit note" : "Add note"}
           </Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <Form id="addNoteForm">
+        <Form id="addEditNoteForm">
           <Form.Group className="mb-3">
             <Form.Label>Title</Form.Label>
             <Form.Control 
@@ -73,7 +98,7 @@ const AddNoteDialog = ({onDismiss, onNoteSaved}: AddNoteDialogProps) => {
       <Modal.Footer>
         <Button
         type="submit"
-        form="addNoteForm"
+        form="addEditNoteForm"
         disabled={isSubmitting}
         >
           Save
