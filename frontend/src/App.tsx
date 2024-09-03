@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Note as NoteModel } from "./models/note";
 import Note from "./components/Note";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row, Spinner } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 
 import styles from './styles/NotePage.module.css'
@@ -14,6 +14,9 @@ import AddNoteEditDialog from "./components/AddNoteEditDialog"
 function App() {
   const [notes, setNotes] = useState<NoteModel[]>([]);
 
+  const [notesLoading, setNotesLoading] = useState(true);
+  const [showNotesLoadingError, setShowNotesLoadingError] = useState(false)
+
   const [showAddNoteDialog , setShowAddNoteDialog] = useState(false);
 
   const [noteToEdit, setNoteToEdit] = useState<NoteModel| null> (null);
@@ -21,6 +24,8 @@ function App() {
   useEffect(() => {
     const loadNotes = async () => {
       try {
+        setShowNotesLoadingError(false);
+        setNotesLoading(true)
         const res = await fetch("/api/notes/get-notes",{
           method: "GET",
       })
@@ -29,7 +34,9 @@ function App() {
         
       } catch (error) {
         console.error(error);
-        alert(error)
+        setShowNotesLoadingError(true);
+      } finally {
+        setNotesLoading(false);
       }
     }
     loadNotes();
@@ -47,11 +54,29 @@ function App() {
       console.error(error)
     }
   }
+
+  const notesGrid = 
+  <Row xs={1} md={2} xl={3} className={`g-4 ${styles.notesGrid}`}>
+  {notes.length > 0 ? (
+    notes.map((note) => (
+      <Col key={note._id}>
+        <Note 
+        note={note}  
+        className={styles.note}
+        onNoteClicked={ setNoteToEdit}
+        onDeleteNoteClicked={deleteNote}
+        />
+      </Col>
+    ))
+  ) : (
+    <p>No notes available</p>
+  )}
+  </Row>
   
 
   return (
     <>
-    <Container>
+    <Container className={styles.notePage}>
       <Button 
       className={`mb-4 mt-2 ${styleUtils.blockCenter}`}
       onClick={() => setShowAddNoteDialog(true)}>
@@ -59,22 +84,21 @@ function App() {
         Add new note
       </Button>
 
-      <Row xs={1} md={2} xl={3} className="g-4">
-      {notes.length > 0 ? (
-        notes.map((note) => (
-          <Col key={note._id}>
-            <Note 
-            note={note}  
-            className={styles.note}
-            onNoteClicked={ setNoteToEdit}
-            onDeleteNoteClicked={deleteNote}
-            />
-          </Col>
-        ))
-      ) : (
-        <p>No notes available</p>
-      )}
-      </Row>
+     {
+      notesLoading && <Spinner animation="border" variant="primary" />
+     }
+
+     {
+      showNotesLoadingError && <p>Something went wrong. Please refresh the page.</p>
+     }
+
+     {!notesLoading && !showNotesLoadingError && 
+      <>
+        {
+          notes.length > 0 ? notesGrid : <p>You don't have any notes yet</p>
+        }
+      </>
+     }
 
       {
   showAddNoteDialog && 
