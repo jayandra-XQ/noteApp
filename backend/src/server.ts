@@ -4,6 +4,9 @@ import express from 'express';
 import morgan from 'morgan';
 
 import noteRoutes from "./routes/note.route"
+import userRoutes from "./routes/user.route"
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 const app = express();
 
@@ -11,11 +14,28 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
+const sessionSecret : string = process.env.SESSION_SECRET || 'defaultSecret';
+
+app.use(session({
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 60 * 60 * 1000,
+  },
+  rolling: true,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_CONNECTION_STRING
+  })
+
+}))
+
 
 const port = process.env.PORT || 5000;
 
 
-app.use('/api/notes' , noteRoutes)
+app.use('/api/notes' , noteRoutes);
+app.use('/api/user', userRoutes);
 
 
 
