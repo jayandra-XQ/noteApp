@@ -1,15 +1,10 @@
 
 
 
-const NotePageLoggedOutView = () => {
-  
-
+const NotesPageLoggedOutView = () => {
   return (
-    <div style={{ textAlign: 'center', padding: '2rem' }}>
-      <h2>You’re not logged in!</h2>
-      <p>Please log in to access your notes and stay organized.</p>
-    </div>
+    <p>Please login to see your notes</p>
   );
 };
 
-export default NotePageLoggedOutView;
+export default NotesPageLoggedOutView;

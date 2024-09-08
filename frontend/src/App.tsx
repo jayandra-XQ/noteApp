@@ -16,31 +16,30 @@ function App() {
 
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
   useEffect(() => {
     const fetchLoggedInUser = async () => {
       try {
-        const response = await fetch('/api/users/', {
+        const response = await fetch('/api/user', {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include"
         });
-
         if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const data = await response.json(); // Parse JSON from the response
-        setLoggedInUser(data.user); // Assuming 'user' is the key in the response
-
+        const data = await response.json(); // Parse the response as JSON
+        setLoggedInUser(data.user); // Assuming the response contains a 'user' field
+  
       } catch (error) {
         console.error("Failed to fetch user:", error);
       }
     };
-
+  
     fetchLoggedInUser();
   }, []);
+  
 
   return (
     <>

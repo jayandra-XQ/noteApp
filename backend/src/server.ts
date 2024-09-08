@@ -7,6 +7,7 @@ import noteRoutes from "./routes/note.route"
 import userRoutes from "./routes/user.route"
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import { requiresAuth } from './middleware/auth';
 
 const app = express();
 
@@ -31,11 +32,11 @@ app.use(session({
 }))
 
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5002;
 
 
-app.use('/api/notes' , noteRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/notes' ,requiresAuth,  noteRoutes);
 
 
 

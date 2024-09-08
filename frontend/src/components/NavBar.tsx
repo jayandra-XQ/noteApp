@@ -14,7 +14,7 @@ const NavBar = ({ loggedInUser, onSignUpClicked, onLoginClicked, onLogoutSuccess
   return (
     <Navbar bg="primary" variant="dark" expand="sm" sticky="top">
       <Container>
-        <Navbar.Brand>
+        <Navbar.Brand >
           Notes App : Your Thoughts, Anywhere
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar" />

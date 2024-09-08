@@ -1,11 +1,15 @@
 import { RequestHandler } from "express";
 import noteModel from "../models/note.model";
 import mongoose from "mongoose";
+import { assertIsDefined } from "../util/assertIsDefined";
 
 
 export const getNotes: RequestHandler = async (req,res) => {
+  const authenticatedUserId = req.session.userId;
   try {
-    const notes = await noteModel.find({}).exec();
+    assertIsDefined(authenticatedUserId)
+
+    const notes = await noteModel.find({userId: authenticatedUserId}).exec();
     res.status(200).json(notes);
     
   } catch (error) {
@@ -19,9 +23,16 @@ export const getNotes: RequestHandler = async (req,res) => {
 
 export const getNote: RequestHandler = async (req, res) => {
     const noteId = req.params.noteId;
+    const authenticatedUserId = req.session.userId;
 
   try {
+    assertIsDefined(authenticatedUserId);
     const note = await noteModel.findById(noteId).exec();
+
+    if(!note?.userId.equals(authenticatedUserId)) {
+      return res.status(403).json({message: "Unauthorized to access this note"})
+    }
+
     res.status(200).json({note, success:true})
 
   } catch (error) {
@@ -33,9 +44,14 @@ export const getNote: RequestHandler = async (req, res) => {
 
 
 export const createNotes: RequestHandler = async (req,res) => {
+  const authenticatedUserId = req.session.userId;
+
   try {
+    assertIsDefined(authenticatedUserId);
+
     const {title, text} : {title:string; text:string} = req.body;
-    const newNote = await  noteModel.create({title,text});
+    const newNote = await  noteModel.create({userId:authenticatedUserId,title,text});
+
     
 
     res.status(200).json(newNote);
@@ -59,10 +75,14 @@ interface updateNoteBody{
 
 
 export const updateNotes: RequestHandler<updateNoteParams, unknown, updateNoteBody, unknown> = async (req,res) => {
+  const authenticatedUserId = req.session.userId;
+
   const noteId = req.params.noteId;
   const newTitle = req.body.title;
   const newText = req.body.text;
   try {
+    assertIsDefined(authenticatedUserId);
+
 
     if (!mongoose.isValidObjectId(noteId)) {
       return res.status(500).json({success: false, message:"Invalid credientials"})
@@ -79,6 +99,10 @@ export const updateNotes: RequestHandler<updateNoteParams, unknown, updateNoteBo
     const note = await noteModel.findById(noteId).exec();
     if(!note){
       return res.status(404).json({success: false, message:"Note not found"})
+    }
+
+    if(!note?.userId.equals(authenticatedUserId)) {
+      return res.status(403).json({message: "Unauthorized to access this note"})
     }
 
     note.title = newTitle;
