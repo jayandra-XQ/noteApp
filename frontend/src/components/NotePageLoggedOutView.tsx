@@ -1,10 +1,8 @@
 
-
-
-const NotesPageLoggedOutView = () => {
+const NotePageLoggedOutView = () => {
   return (
-    <p>Please login to see your notes</p>
-  );
-};
+    <p>please login to see your notes.</p>
+  )
+}
 
-export default NotesPageLoggedOutView;
+export default NotePageLoggedOutView
